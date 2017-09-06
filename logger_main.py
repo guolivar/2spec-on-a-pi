@@ -169,7 +169,13 @@ while True:
             min_rawco = min_rawco / n_samples_co
             min_rawtemp_co = min_rawtemp_co / n_samples_co
             # Update thingspeak channel
-            options = {'api_key':writekey,'field1':min_no2,'field2':min_temp, 'field3':min_rawno2, 'field4':min_rawtemp}
+            options = {'api_key':writekey,
+            'field1':min_co,
+            'field2':min_no2,
+            'field3':min_rawco,
+            'field4':min_rawno2,
+            'field5':min_rawtemp_co,
+            'field6':min_rawtemp_no2}
             req = requests.post(thingspk,data=options)
             min_no2 = 0
             min_temp_no2 = 0
