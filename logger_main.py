@@ -69,19 +69,15 @@ ser_no2 = serial.Serial(port_no2, 9600, parity=serial.PARITY_NONE,
 ser_no2.flushInput()
 ser_no2.flushOutput()
 # If the sensor was working in a continuous mode, stop it
-ser_co.write('r\r')
 ser_no2.write('r\r')
 # Wait 5 seconds to stabilize the sensors
 time.sleep(5)
 # Start the logging
 while True:
     # Request a reading (send any character through the serial port)
-    print("Request CO data")
     ser_co.write('g\r')
-    print("Request NO2 data")
     ser_no2.write('g\r')
     # Get the line of data from the CO sensor
-    print("Reading CO data")
     while True:
         c = ser_co.read(1)
         bline_co += c
@@ -89,7 +85,6 @@ while True:
             break
     # Parse the data line
     line_co = bline_co.decode("utf-8")
-    print("Reading NO2 data")
     while True:
         c = ser_no2.read(1)
         bline_no2 += c
@@ -126,12 +121,10 @@ while True:
             ser_co.flushInput()
             ser_no2.flushInput()
             flags[0] = 'local'
-        file_line = timestamp + ', X' + line_co + ', X' + line_no2
-    print(file_line)
+        file_line = timestamp + ',' + line_co + ',' + line_no2
     sep_line_co = line_co.split(',')
     sep_line_no2 = line_no2.split(',')
     if flags[0]=='online':
-        print("Building online averages")
         min_co = min_co + eval(sep_line_co[1])
         min_temp_co = min_temp_co + eval(sep_line_co[2])
         min_rawco = min_rawco + eval(sep_line_co[4])
@@ -176,7 +169,10 @@ while True:
             'field4':min_rawno2,
             'field5':min_rawtemp_co,
             'field6':min_rawtemp_no2}
-            req = requests.post(thingspk,data=options)
+            try:
+                req = requests.post(thingspk,data=options)
+            except requests.exceptions.RequestException as e:
+                print("Didn't upload data")
             min_no2 = 0
             min_temp_no2 = 0
             min_rawno2 = 0
@@ -193,9 +189,8 @@ while True:
         if current_file_name != prev_file_name:
             subprocess.call(["gzip", prev_file_name])
             prev_file_name = current_file_name
-    # Wait 10s for the next measurement --- OPTIONAL
-    print("Wait 1 seconds")
-    while int(time.time()) < (rec_time_s + 1):
+    # Wait 5s for the next measurement --- OPTIONAL
+    while int(time.time()) < (rec_time_s + 5):
         # wait a few miliseconds
         time.sleep(0.05)
 print('I\'m done')
