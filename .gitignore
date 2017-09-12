@@ -1,5 +1,7 @@
 # Sample data files
 data/*
+# Settings file
+config/settings.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -39,6 +39,15 @@ prev_file_name = datapath + time.strftime("%Y%m%d.txt", rec_time)
 flags = settings_file.readline().rstrip().split(',')
 print(timestamp + flags[0])
 
+current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+current_file = open(current_file_name, "a")
+current_file.write(timestamp + port_co + "\n")
+current_file.write(timestamp + port_no2 + "\n")
+current_file.write(timestamp + datapath + "\n")
+current_file.write(timestamp + flags[0] + "\n")
+current_file.flush()
+current_file.close()
+
 # Thingspeak address
 thingspk = settings_file.readline().rstrip('\n')
 # Thingspeak channel
@@ -148,7 +157,11 @@ while True:
     if flags[0] == 'online':
         # Is it the top of the minute?
         if rec_time[4] != prev_minute:
-            print(timestamp + ": averagig and sending to thingspeak")
+            current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+            current_file = open(current_file_name, "a")
+            current_file.write(timestamp + ": Averagig and sending to thingspeak" + "\n")
+            current_file.flush()
+            current_file.close()
             prev_minute = rec_time[4]
             # YES! --> Update the Thinkgspeak channel
             # Average for the minute with what we have
@@ -171,7 +184,11 @@ while True:
             try:
                 req = requests.post(thingspk,data=options)
             except requests.exceptions.RequestException as e:
-                print(timestamp + ": Didn't upload data")
+                current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+                current_file = open(current_file_name, "a")
+                current_file.write(timestamp + ": Didn't upload data" + "\n")
+                current_file.flush()
+                current_file.close()
             min_no2 = 0
             min_temp_no2 = 0
             min_rawno2 = 0
