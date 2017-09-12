@@ -27,17 +27,17 @@ n_samples_co = 0
 settings_file = open("./config/settings.txt")
 # CO Serial port e.g. "/dev/ttyUSB0"
 port_co = settings_file.readline().rstrip('\n')
-print(port_co)
+print(timestamp + port_co)
 # NO2 Serial port e.g. "/dev/ttyUSB0"
 port_no2 = settings_file.readline().rstrip('\n')
-print(port_no2)
+print(timestamp + port_no2)
 # path for data files
 # e.g. "/home/logger/datacpc3010/"
 datapath = settings_file.readline().rstrip('\n')
-print(datapath)
+print(timestamp + datapath)
 prev_file_name = datapath + time.strftime("%Y%m%d.txt", rec_time)
 flags = settings_file.readline().rstrip().split(',')
-print(flags[0])
+print(timestamp + flags[0])
 
 # Thingspeak address
 thingspk = settings_file.readline().rstrip('\n')
@@ -97,7 +97,6 @@ while True:
     rec_time_s = int(time.time())
     rec_time = time.gmtime()
     timestamp = time.strftime("%Y/%m/%d %H:%M:%S GMT", rec_time)
-    print(timestamp)
     # SAMPLE LINE ONLY
     # line = '111416020452, -160, 20, 60, 32852, 24996, 34986, 00, 00, 02, 48'
     line_co = line_co.rstrip()
@@ -149,7 +148,7 @@ while True:
     if flags[0] == 'online':
         # Is it the top of the minute?
         if rec_time[4] != prev_minute:
-            print("averagig and sending to thingspeak")
+            print(timestamp + ": averagig and sending to thingspeak")
             prev_minute = rec_time[4]
             # YES! --> Update the Thinkgspeak channel
             # Average for the minute with what we have
@@ -172,7 +171,7 @@ while True:
             try:
                 req = requests.post(thingspk,data=options)
             except requests.exceptions.RequestException as e:
-                print("Didn't upload data")
+                print(timestamp + ": Didn't upload data")
             min_no2 = 0
             min_temp_no2 = 0
             min_rawno2 = 0
