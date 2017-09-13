@@ -41,10 +41,11 @@ print(timestamp + flags[0])
 
 current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
 current_file = open(current_file_name, "a")
-current_file.write(timestamp + port_co + "\n")
-current_file.write(timestamp + port_no2 + "\n")
-current_file.write(timestamp + datapath + "\n")
-current_file.write(timestamp + flags[0] + "\n")
+current_file.write(timestamp + " Logging starts\n")
+current_file.write(timestamp + " " + port_co + "\n")
+current_file.write(timestamp + " " + port_no2 + "\n")
+current_file.write(timestamp + " " + datapath + "\n")
+current_file.write(timestamp + " " + flags[0] + "\n")
 current_file.flush()
 current_file.close()
 
@@ -204,6 +205,11 @@ while True:
     if flags[1] == 1:
         if current_file_name != prev_file_name:
             subprocess.call(["gzip", prev_file_name])
+            current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+            current_file = open(current_file_name, "a")
+            current_file.write(timestamp + ": Previous data file compressed" + "\n")
+            current_file.flush()
+            current_file.close()
             prev_file_name = current_file_name
     # Wait 5s for the next measurement --- OPTIONAL
     while int(time.time()) < (rec_time_s + 5):
