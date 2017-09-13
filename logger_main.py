@@ -39,8 +39,8 @@ prev_file_name = datapath + time.strftime("%Y%m%d.txt", rec_time)
 flags = settings_file.readline().rstrip().split(',')
 print(timestamp + flags[0])
 
-current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
-current_file = open(current_file_name, "a")
+current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+current_file = open(current_LOG_name, "a")
 current_file.write(timestamp + " Logging starts\n")
 current_file.write(timestamp + " " + port_co + "\n")
 current_file.write(timestamp + " " + port_no2 + "\n")
@@ -158,8 +158,8 @@ while True:
     if flags[0] == 'online':
         # Is it the top of the minute?
         if rec_time[4] != prev_minute:
-            current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
-            current_file = open(current_file_name, "a")
+            current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+            current_file = open(current_LOG_name, "a")
             current_file.write(timestamp + ": Averagig and sending to thingspeak" + "\n")
             current_file.flush()
             current_file.close()
@@ -185,8 +185,8 @@ while True:
             try:
                 req = requests.post(thingspk,data=options)
             except requests.exceptions.RequestException as e:
-                current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
-                current_file = open(current_file_name, "a")
+                current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+                current_file = open(current_LOG_name, "a")
                 current_file.write(timestamp + ": Didn't upload data" + "\n")
                 current_file.flush()
                 current_file.close()
@@ -205,8 +205,8 @@ while True:
     if flags[1] == 1:
         if current_file_name != prev_file_name:
             subprocess.call(["gzip", prev_file_name])
-            current_file_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
-            current_file = open(current_file_name, "a")
+            current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+            current_file = open(current_LOG_name, "a")
             current_file.write(timestamp + ": Previous data file compressed" + "\n")
             current_file.flush()
             current_file.close()
