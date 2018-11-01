@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 # Load the libraries
+#this is to test something
 import serial       # Serial communications
 import time         # Timing utilities
 import subprocess   # Shell utilities ... compressing data files
-import requests     # Send data to Thingspeak
-
+import httplib, urllib   # http and url libs used for HTTP POSTs
 
 # Set the time constants
 rec_time = time.gmtime()
@@ -49,20 +49,20 @@ current_file.write(timestamp + " " + flags[0] + "\n")
 current_file.flush()
 current_file.close()
 
-# Thingspeak address
-thingspk = settings_file.readline().rstrip('\n')
-# Thingspeak channel
-channel = settings_file.readline().rstrip('\n')
-# Thinkgspeak readkey
-readkey = settings_file.readline().rstrip('\n')
-# Thinkgspeak writekey
-writekey = settings_file.readline().rstrip('\n')
+# Phant address
+phant_server = settings_file.readline().rstrip('\n')
+# Phant publicKey
+publickey = settings_file.readline().rstrip('\n')
+# Phant privateKey
+privatekey = settings_file.readline().rstrip('\n')
 
 # Close the settings file
 settings_file.close()
 
+fields = ["co", "no2", "co_t", "no2_t", "serial_co", "serial_no2"] # Your feed's data fields
+
 # Hacks to work with custom end of line
-eol = b'\n'
+"seol = b'\n'
 leneol = len(eol)
 bline_co = bytearray()
 bline_no2 = bytearray()
@@ -158,13 +158,13 @@ while True:
     if flags[0] == 'online':
         # Is it the top of the minute?
         if rec_time[4] != prev_minute:
+            # YES! --> Update the Thinkgspeak channel
             current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
             current_file = open(current_LOG_name, "a")
-            current_file.write(timestamp + ": Averagig and sending to thingspeak" + "\n")
+            current_file.write(timestamp + ": Averagig and sending to Phant server" + "\n")
             current_file.flush()
             current_file.close()
             prev_minute = rec_time[4]
-            # YES! --> Update the Thinkgspeak channel
             # Average for the minute with what we have
             min_no2 = min_no2 / n_samples_no2
             min_temp_no2 = min_temp_no2 / n_samples_no2
@@ -174,22 +174,45 @@ while True:
             min_temp_co = min_temp_co / n_samples_co
             min_rawco = min_rawco / n_samples_co
             min_rawtemp_co = min_rawtemp_co / n_samples_co
-            # Update thingspeak channel
-            options = {'api_key':writekey,
-            'field1':min_co,
-            'field2':min_no2,
-            'field3':min_rawco,
-            'field4':min_rawno2,
-            'field5':min_rawtemp_co,
-            'field6':min_rawtemp_no2}
-            try:
-                req = requests.post(thingspk,data=options)
-            except requests.exceptions.RequestException as e:
-                current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
-                current_file = open(current_LOG_name, "a")
-                current_file.write(timestamp + ": Didn't upload data" + "\n")
-                current_file.flush()
-                current_file.close()
+
+            print("Sending an update!")
+            # Our first job is to create the data set. Should turn into
+            # something like "light=1234&switch=0&name=raspberrypi"
+            # fields = ["co", "no2", "co_t", "no2_t", "serial_co", "serial_no2"]
+            data = {} # Create empty set, then fill in with our three fields:
+            # Field 0, co
+            data[fields[0]] = min_co
+            # Field 1, no2
+            data[fields[1]] = min_no2
+            # Field 2, Temperature for CO sensor
+            data[fields[2]] = min_temp_co
+            # Field 3, Temperature for NO2 sensor
+            data[fields[2]] = min_temp_no2
+            # Field 4, SerialN for CO sensor
+            data[fields[2]] = sep_line_co[0]
+            # Field 5, SerialN for NO2 sensor
+            data[fields[2]] = sep_line_no2[0]
+
+            # Next, we need to encode that data into a url format:
+            params = urllib.urlencode(data)
+
+            # Now we need to set up our headers:
+            headers = {} # start with an empty set
+            # These are static, should be there every time:
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+            headers["Connection"] = "close"
+            headers["Content-Length"] = len(params) # length of data
+            headers["Phant-Private-Key"] = privateKey # private key header
+
+            # Now we initiate a connection, and post the data
+            c = httplib.HTTPConnection(server)
+            # Here's the magic, our reqeust format is POST, we want
+            # to send the data to phant.server/input/PUBLIC_KEY.txt
+            # and include both our data (params) and headers
+            c.request("POST", "/input/" + publicKey + ".txt", params, headers)
+            r = c.getresponse() # Get the server's response and print it
+            print r.status, r.reason
+
             min_no2 = 0
             min_temp_no2 = 0
             min_rawno2 = 0
