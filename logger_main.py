@@ -62,7 +62,7 @@ settings_file.close()
 fields = ["co", "no2", "co_t", "no2_t", "serial_co", "serial_no2"] # Your feed's data fields
 
 # Hacks to work with custom end of line
-"seol = b'\n'
+eol = b'\n'
 leneol = len(eol)
 bline_co = bytearray()
 bline_no2 = bytearray()
@@ -72,21 +72,21 @@ ser_co = serial.Serial(port_co, 9600, parity=serial.PARITY_NONE,
 ser_co.flushInput()
 ser_co.flushOutput()
 # If the sensor was working in a continuous mode, stop it
-ser_co.write('r\r')
+ser_co.write('\r')
 # Open the no2 serial port and clean the I/O buffer
 ser_no2 = serial.Serial(port_no2, 9600, parity=serial.PARITY_NONE,
                     bytesize=serial.EIGHTBITS)
 ser_no2.flushInput()
 ser_no2.flushOutput()
 # If the sensor was working in a continuous mode, stop it
-ser_no2.write('r\r')
+ser_no2.write('\r')
 # Wait 5 seconds to stabilize the sensors
 time.sleep(5)
 # Start the logging
 while True:
     # Request a reading (send any character through the serial port)
-    ser_co.write('g\r')
-    ser_no2.write('g\r')
+    ser_co.write('\r')
+    ser_no2.write('\r')
     # Get the line of data from the CO sensor
     while True:
         c = ser_co.read(1)
@@ -111,6 +111,9 @@ while True:
     # line = '111416020452, -160, 20, 60, 32852, 24996, 34986, 00, 00, 02, 48'
     line_co = line_co.rstrip()
     line_no2 = line_no2.rstrip()
+    print(rec_time[4])
+    print(timestamp + line_co)
+    print(timestamp + line_no2)
     # Make the line pretty for the file
     # If it has been within 1 hour of the start, flag the data by adding X to
     # serialn
@@ -187,11 +190,11 @@ while True:
             # Field 2, Temperature for CO sensor
             data[fields[2]] = min_temp_co
             # Field 3, Temperature for NO2 sensor
-            data[fields[2]] = min_temp_no2
+            data[fields[3]] = min_temp_no2
             # Field 4, SerialN for CO sensor
-            data[fields[2]] = sep_line_co[0]
+            data[fields[4]] = sep_line_co[0]
             # Field 5, SerialN for NO2 sensor
-            data[fields[2]] = sep_line_no2[0]
+            data[fields[5]] = sep_line_no2[0]
 
             # Next, we need to encode that data into a url format:
             params = urllib.urlencode(data)
@@ -202,14 +205,16 @@ while True:
             headers["Content-Type"] = "application/x-www-form-urlencoded"
             headers["Connection"] = "close"
             headers["Content-Length"] = len(params) # length of data
-            headers["Phant-Private-Key"] = privateKey # private key header
+            headers["Phant-Private-Key"] = privatekey # private key header
 
             # Now we initiate a connection, and post the data
-            c = httplib.HTTPConnection(server)
+            c = httplib.HTTPConnection(phant_server,8080)
             # Here's the magic, our reqeust format is POST, we want
             # to send the data to phant.server/input/PUBLIC_KEY.txt
             # and include both our data (params) and headers
-            c.request("POST", "/input/" + publicKey + ".txt", params, headers)
+            print(params)
+            print(headers)
+            c.request("POST", "/input/" + publickey + ".txt", params, headers)
             r = c.getresponse() # Get the server's response and print it
             print r.status, r.reason
 
