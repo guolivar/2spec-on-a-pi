@@ -207,17 +207,25 @@ while True:
             headers["Content-Length"] = len(params) # length of data
             headers["Phant-Private-Key"] = privatekey # private key header
 
-            # Now we initiate a connection, and post the data
-            c = httplib.HTTPConnection(phant_server,8080)
-            # Here's the magic, our reqeust format is POST, we want
-            # to send the data to phant.server/input/PUBLIC_KEY.txt
-            # and include both our data (params) and headers
-            print(params)
-            print(headers)
-            c.request("POST", "/input/" + publickey + ".txt", params, headers)
-            r = c.getresponse() # Get the server's response and print it
-            print r.status, r.reason
-
+            # This is very breakable so we try to catch the upload errors
+            try:
+                # Now we initiate a connection, and post the data
+                c = httplib.HTTPConnection(phant_server,8080)
+                # Here's the magic, our reqeust format is POST, we want
+                # to send the data to phant.server/input/PUBLIC_KEY.txt
+                # and include both our data (params) and headers
+                print(params)
+                print(headers)
+                c.request("POST", "/input/" + publickey + ".txt", params, headers)
+                r = c.getresponse() # Get the server's response and print it
+                print r.status, r.reason
+            except:
+                print("Connection error. No data upload. Nothing to se here, move along")
+                current_LOG_name = datapath + time.strftime("%Y%m%d.LOG", rec_time)
+                current_file = open(current_LOG_name, "a")
+                current_file.write(timestamp + " Connection error\n")
+                current_file.flush()
+                current_file.close()
             min_no2 = 0
             min_temp_no2 = 0
             min_rawno2 = 0
