@@ -6,7 +6,7 @@ import serial       # Serial communications
 import time         # Timing utilities
 import subprocess   # Shell utilities ... compressing data files
 import httplib, urllib   # http and url libs used for HTTP POSTs
-import os           # OS utils to keep working directory
+import os,sys           # OS utils to keep working directory
 
 # Change working directory to the script's path
 os.chdir(os.path.dirname(sys.argv[0]))
