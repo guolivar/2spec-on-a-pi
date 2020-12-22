@@ -2,9 +2,8 @@
 /dev/ttyUSB1
 ./data/
 online,0
-penap-data.dyndns.org
-4mWeal6PZVSlE1kyNkQdCvVadDE
-qv5jBQVZqDUl379DE9bZCEa4xlO
+dusty-acorn.dyndns.org
+waterview/SPECNO2
 ## Only the first lines are processed.
 1 <CO SERIAL PORT ADDRESS>
 1 <NO2 SERIAL PORT ADDRESS>
